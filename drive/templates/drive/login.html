@@ -1,0 +1,46 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}Đăng nhập - Google Drive Clone{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Logo -->
+        <div class="auth-logo">
+            <svg class="drive-svg-logo" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                <path d="m6.6 74.4 13.9-24.2h53.4l-13.9 24.2z" fill="#0066da"/>
+                <path d="m20.5 50.2-20.5-35.4 13.9-24.2 34.3 59.6z" fill="#00a85d"/>
+                <path d="m60.1 50.2-13.8-24.1 20.6-35.5 20.4 35.4z" fill="#ffbc00"/>
+            </svg>
+            <h2>Google Drive</h2>
+            <p>Đăng nhập để tiếp tục đến Drive của bạn</p>
+        </div>
+
+        {% if error %}
+        <div class="auth-error-banner">
+            <span class="material-symbols-rounded">error</span>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder=" " required autocomplete="username">
+                <label for="username">Tên đăng nhập</label>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder=" " required autocomplete="current-password">
+                <label for="password">Mật khẩu</label>
+            </div>
+
+            <div class="auth-actions">
+                <a href="{% url 'signup' %}" class="btn-link">Tạo tài khoản</a>
+                <button type="submit" class="btn btn-primary">Tiếp theo</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

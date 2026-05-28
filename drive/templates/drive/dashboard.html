@@ -1,0 +1,336 @@
+{% extends 'drive/base.html' %}
+{% load static %}
+
+{% block title %}Drive của tôi - Google Drive Clone{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-container">
+                <svg class="drive-logo" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m6.6 74.4 13.9-24.2h53.4l-13.9 24.2z" fill="#0066da"/>
+                    <path d="m20.5 50.2-20.5-35.4 13.9-24.2 34.3 59.6z" fill="#00a85d"/>
+                    <path d="m60.1 50.2-13.8-24.1 20.6-35.5 20.4 35.4z" fill="#ffbc00"/>
+                </svg>
+                <span class="app-title">Drive</span>
+            </div>
+        </div>
+
+        <div class="header-middle">
+            <div class="search-bar">
+                <span class="material-symbols-rounded search-icon">search</span>
+                <input type="text" id="search-input" placeholder="Tìm trong Drive">
+                <button id="clear-search-btn" class="icon-btn tooltip" data-tooltip="Xóa tìm kiếm">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="user-profile">
+                <span class="username-display">{{ user.username }}</span>
+                <div class="avatar-circle">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <a href="{% url 'logout' %}" class="btn-logout icon-btn tooltip" data-tooltip="Đăng xuất">
+                    <span class="material-symbols-rounded">logout</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-body">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- "New" Button with Dropdown -->
+            <div class="new-btn-container">
+                <button class="btn btn-new" id="new-dropdown-btn">
+                    <span class="material-symbols-rounded btn-icon-plus">add</span>
+                    <span>Mới</span>
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="new-menu">
+                    <button class="dropdown-item" id="create-folder-trigger">
+                        <span class="material-symbols-rounded">create_new_folder</span>
+                        <span>Thư mục mới</span>
+                    </button>
+                    <hr class="dropdown-divider">
+                    <button class="dropdown-item" id="upload-file-trigger">
+                        <span class="material-symbols-rounded">upload_file</span>
+                        <span>Tải tệp lên</span>
+                    </button>
+                    <!-- Invisible File Input for upload -->
+                    <input type="file" id="file-selector" multiple style="display: none;">
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav">
+                <button class="nav-link active" data-filter="my-drive">
+                    <span class="material-symbols-rounded">hard_drive</span>
+                    <span>Drive của tôi</span>
+                </button>
+                <button class="nav-link" data-filter="shared-with-me">
+                    <span class="material-symbols-rounded">group</span>
+                    <span>Được chia sẻ với tôi</span>
+                </button>
+                <button class="nav-link" data-filter="recent">
+                    <span class="material-symbols-rounded">schedule</span>
+                    <span>Gần đây</span>
+                </button>
+                <button class="nav-link" data-filter="starred">
+                    <span class="material-symbols-rounded">star</span>
+                    <span>Có gắn dấu sao</span>
+                </button>
+                <button class="nav-link" data-filter="trash">
+                    <span class="material-symbols-rounded">delete</span>
+                    <span>Thùng rác</span>
+                </button>
+            </nav>
+
+            <!-- Storage status -->
+            <div class="storage-section">
+                <div class="storage-header">
+                    <span class="material-symbols-rounded">cloud</span>
+                    <span>Bộ nhớ</span>
+                </div>
+                <div class="storage-bar-bg">
+                    <div class="storage-bar-fill" id="storage-fill" style="width: 0%"></div>
+                </div>
+                <div class="storage-text" id="storage-text">Đang tải...</div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Breadcrumbs & View Toggle Controls -->
+            <div class="workspace-controls">
+                <div class="breadcrumbs-container" id="breadcrumbs">
+                    <span class="breadcrumb-item font-title active" data-id="root">Drive của tôi</span>
+                </div>
+                
+                <div class="view-controls">
+                    <!-- Layout Toggle -->
+                    <button id="layout-toggle-btn" class="icon-btn tooltip" data-tooltip="Dạng danh sách" data-layout="grid">
+                        <span class="material-symbols-rounded">view_list</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area (Folders & Files) -->
+            <div class="workspace-scrollable" id="drop-zone">
+                <!-- Drop Overlay for drag & drop visual -->
+                <div class="drag-drop-overlay" id="drag-overlay">
+                    <div class="drag-overlay-card">
+                        <span class="material-symbols-rounded drag-overlay-icon">cloud_upload</span>
+                        <h3>Thả các tệp vào đây</h3>
+                        <p>để tải chúng lên thư mục này ngay lập tức</p>
+                    </div>
+                </div>
+
+                <!-- Empty State Message -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <span class="material-symbols-rounded empty-icon">folder_open</span>
+                    <h3 id="empty-title">Thư mục trống</h3>
+                    <p id="empty-desc">Kéo thả tệp hoặc sử dụng nút "Mới" để bắt đầu</p>
+                </div>
+
+                <div class="content-view grid-view" id="content-container">
+                    <!-- Dynamic rendering happens here -->
+                    <!-- SECTION 1: FOLDERS -->
+                    <div class="content-section" id="folders-section">
+                        <h4 class="section-title">Thư mục</h4>
+                        <div class="items-grid" id="folders-grid"></div>
+                    </div>
+
+                    <!-- SECTION 2: FILES -->
+                    <div class="content-section" id="files-section">
+                        <h4 class="section-title">Tệp tin</h4>
+                        <div class="items-grid" id="files-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Custom Floating Right-click Context Menu -->
+<div class="context-menu" id="context-menu">
+    <button class="context-item" id="ctx-star">
+        <span class="material-symbols-rounded">star</span>
+        <span class="ctx-text">Gắn dấu sao</span>
+    </button>
+    <button class="context-item" id="ctx-share">
+        <span class="material-symbols-rounded">share</span>
+        <span>Chia sẻ</span>
+    </button>
+    <button class="context-item" id="ctx-rename">
+        <span class="material-symbols-rounded">edit</span>
+        <span>Đổi tên</span>
+    </button>
+    <button class="context-item" id="ctx-download">
+        <span class="material-symbols-rounded">download</span>
+        <span>Tải xuống</span>
+    </button>
+    <hr class="context-divider">
+    <button class="context-item dest-danger" id="ctx-trash">
+        <span class="material-symbols-rounded">delete</span>
+        <span class="ctx-text">Di chuyển vào thùng rác</span>
+    </button>
+    <button class="context-item" id="ctx-restore" style="display: none;">
+        <span class="material-symbols-rounded">restore_from_trash</span>
+        <span>Khôi phục</span>
+    </button>
+    <button class="context-item dest-danger" id="ctx-delete-forever" style="display: none;">
+        <span class="material-symbols-rounded">delete_forever</span>
+        <span>Xóa vĩnh viễn</span>
+    </button>
+</div>
+
+<!-- Modal Dialog overlays -->
+<!-- 1. Create Folder Modal -->
+<div class="modal-overlay" id="create-folder-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Thư mục mới</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group-outline">
+                <input type="text" id="new-folder-name" placeholder="Thư mục chưa đặt tên" autofocus autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-flat" id="cancel-folder-btn">Hủy</button>
+            <button class="btn btn-primary" id="confirm-folder-btn">Tạo</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Rename Modal -->
+<div class="modal-overlay" id="rename-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Đổi tên</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group-outline">
+                <input type="text" id="rename-input" autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-flat" id="cancel-rename-btn">Hủy</button>
+            <button class="btn btn-primary" id="confirm-rename-btn">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Confirm Delete Modal -->
+<div class="modal-overlay" id="confirm-delete-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Xóa vĩnh viễn?</h3>
+        </div>
+        <div class="modal-body">
+            <p>Đối tượng sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-flat" id="cancel-delete-btn">Hủy</button>
+            <button class="btn btn-danger" id="confirm-delete-btn">Xóa vĩnh viễn</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Share Modal -->
+<div class="modal-overlay" id="share-modal">
+    <div class="modal-card" style="width: 520px;">
+        <div class="modal-header">
+            <h3>Chia sẻ quyền truy cập</h3>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+            <!-- File Info / Link -->
+            <div class="share-file-info-area" style="background-color:var(--bg-main); padding:12px; border-radius:var(--radius-sm); font-size:13px; display:flex; flex-direction:column; gap:8px;">
+                <div><strong>Đang chia sẻ:</strong> <span id="share-file-name" style="word-break:break-all; font-weight:500;">-</span></div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                    <input type="text" id="share-file-link" readonly style="flex-grow:1; background-color:var(--bg-white); border:1px solid var(--border-color); border-radius:4px; padding:6px; font-size:11px; outline:none; cursor:pointer;" onclick="this.select()">
+                    <button class="btn btn-primary" id="copy-link-btn" style="padding:6px 12px; font-size:11px; border-radius:4px; flex-shrink:0;">Sao chép</button>
+                </div>
+            </div>
+            
+            <!-- General access Visibility -->
+            <div class="share-visibility-area" style="display:flex; flex-direction:column; gap:6px;">
+                <label for="share-visibility-select" style="font-size:13px; font-weight:500; color:var(--text-secondary);">Quyền truy cập chung</label>
+                <div class="form-group-outline" style="position:relative;">
+                    <select id="share-visibility-select" style="width:100%; padding:10px 16px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:14px; outline:none; background-color:var(--bg-white);">
+                        <option value="private">🔒 Riêng tư (Chỉ những người được thêm mới có quyền xem)</option>
+                        <option value="public">🌐 Công khai (Bất kỳ ai có liên kết đều có thể xem/tải)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Share with specific users -->
+            <div class="share-add-users" style="display:flex; flex-direction:column; gap:6px;">
+                <label for="share-username-input" style="font-size:13px; font-weight:500; color:var(--text-secondary);">Thêm người dùng</label>
+                <div style="display:flex; gap:8px;">
+                    <div class="form-group-outline" style="flex-grow:1;">
+                        <input type="text" id="share-username-input" placeholder="Nhập tên đăng nhập (ví dụ: userB)" autocomplete="off">
+                    </div>
+                    <button class="btn btn-primary" id="add-share-user-btn" style="border-radius:var(--radius-sm); padding:10px 16px;">Thêm</button>
+                </div>
+                <div id="share-error-message" style="color:var(--text-danger); font-size:12px; display:none; align-items:center; gap:4px; margin-top:2px;">
+                    <span class="material-symbols-rounded" style="font-size:16px;">error</span>
+                    <span id="share-error-text">Lỗi</span>
+                </div>
+            </div>
+            
+            <!-- List of shared users -->
+            <div class="share-list-area" style="display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:13px; font-weight:500; color:var(--text-secondary);">Người dùng đã được chia sẻ</span>
+                <div id="shared-users-list" style="max-height:120px; overflow-y:auto; border:1px solid var(--border-color); border-radius:var(--radius-sm); display:flex; flex-direction:column; background-color:var(--bg-main);">
+                    <!-- Shared users rendered dynamically -->
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="close-share-btn">Xong</button>
+        </div>
+    </div>
+</div>
+
+<!-- Docked Upload Progress Widget -->
+<div class="upload-widget collapsed" id="upload-widget">
+    <div class="upload-widget-header" id="upload-widget-toggle">
+        <div class="upload-widget-title-area">
+            <span class="material-symbols-rounded upload-header-icon">cloud_upload</span>
+            <span id="upload-widget-title">Đang tải lên 0 tệp</span>
+        </div>
+        <div class="upload-widget-actions">
+            <button class="icon-btn-small" id="upload-widget-close-btn">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+    </div>
+    <div class="upload-widget-body" id="upload-list">
+        <!-- Render uploaded files item with progress dynamically -->
+        <!-- Example structure of list item:
+        <div class="upload-item">
+            <div class="upload-item-info">
+                <span class="material-symbols-rounded file-icon">description</span>
+                <span class="file-name">document.pdf</span>
+            </div>
+            <div class="upload-item-status">
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 50%"></div></div>
+                <span class="material-symbols-rounded status-icon pending">pending</span>
+            </div>
+        </div>
+        -->
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'drive/js/app.js' %}"></script>
+{% endblock %}
