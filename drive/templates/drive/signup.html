@@ -1,0 +1,56 @@
+{% extends 'drive/base.html' %}
+
+{% block title %}Tạo tài khoản - Google Drive Clone{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Logo -->
+        <div class="auth-logo">
+            <svg class="drive-svg-logo" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                <path d="m6.6 74.4 13.9-24.2h53.4l-13.9 24.2z" fill="#0066da"/>
+                <path d="m20.5 50.2-20.5-35.4 13.9-24.2 34.3 59.6z" fill="#00a85d"/>
+                <path d="m60.1 50.2-13.8-24.1 20.6-35.5 20.4 35.4z" fill="#ffbc00"/>
+            </svg>
+            <h2>Google Drive</h2>
+            <p>Tạo tài khoản Google mới của bạn</p>
+        </div>
+
+        {% if error %}
+        <div class="auth-error-banner">
+            <span class="material-symbols-rounded">error</span>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'signup' %}" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder=" " required autocomplete="username">
+                <label for="username">Tên đăng nhập</label>
+            </div>
+
+            <div class="form-group">
+                <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                <label for="email">Địa chỉ Email</label>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                <label for="password">Mật khẩu</label>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required autocomplete="new-password">
+                <label for="confirm_password">Xác nhận mật khẩu</label>
+            </div>
+
+            <div class="auth-actions">
+                <a href="{% url 'login' %}" class="btn-link">Đăng nhập thay thế</a>
+                <button type="submit" class="btn btn-primary">Đăng ký</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
