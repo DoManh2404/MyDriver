@@ -29,3 +29,6 @@ Thumbs.db
 
 #Media files
 media/
+
+#my ai files
+.my_ai/

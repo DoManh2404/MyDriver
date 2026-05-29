@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,12 @@
     
     <!-- App Custom styling -->
     <link rel="stylesheet" href="{% static 'drive/css/styles.css' %}">
+    <script>
+        (function () {
+            const savedLang = localStorage.getItem('gdrive_lang') || 'en';
+            document.documentElement.setAttribute('lang', savedLang);
+        })();
+    </script>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -25,6 +31,23 @@
     <!-- Global CSRF token configuration for JS Fetch requests -->
     <script>
         const CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
+    <script src="{% static 'drive/js/i18n.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.I18N && typeof window.I18N.applyTranslations === 'function') {
+                window.I18N.applyTranslations();
+            }
+            document.querySelectorAll('[data-lang-toggle]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const nextLang = window.I18N.getCurrentLang() === 'en' ? 'vi' : 'en';
+                    window.I18N.setLang(nextLang);
+                    document.querySelectorAll('[data-lang-current]').forEach(function (node) {
+                        node.textContent = nextLang.toUpperCase();
+                    });
+                });
+            });
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

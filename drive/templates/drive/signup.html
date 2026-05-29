@@ -1,6 +1,6 @@
 {% extends 'drive/base.html' %}
 
-{% block title %}Tạo tài khoản - Google Drive Clone{% endblock %}
+{% block title %}Create account - Google Drive Clone{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
@@ -12,8 +12,8 @@
                 <path d="m20.5 50.2-20.5-35.4 13.9-24.2 34.3 59.6z" fill="#00a85d"/>
                 <path d="m60.1 50.2-13.8-24.1 20.6-35.5 20.4 35.4z" fill="#ffbc00"/>
             </svg>
-            <h2>Google Drive</h2>
-            <p>Tạo tài khoản Google mới của bạn</p>
+            <h2 data-i18n="auth.drive_title">Google Drive</h2>
+            <p data-i18n="auth.signup_subtitle">Create your Google Account</p>
         </div>
 
         {% if error %}
@@ -28,29 +28,30 @@
             
             <div class="form-group">
                 <input type="text" id="username" name="username" placeholder=" " required autocomplete="username">
-                <label for="username">Tên đăng nhập</label>
+                <label for="username" data-i18n="auth.username">Username</label>
             </div>
 
             <div class="form-group">
                 <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
-                <label for="email">Địa chỉ Email</label>
+                <label for="email" data-i18n="auth.email">Email address</label>
             </div>
 
             <div class="form-group">
                 <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
-                <label for="password">Mật khẩu</label>
+                <label for="password" data-i18n="auth.password">Password</label>
             </div>
 
             <div class="form-group">
                 <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required autocomplete="new-password">
-                <label for="confirm_password">Xác nhận mật khẩu</label>
+                <label for="confirm_password" data-i18n="auth.confirm_password">Confirm password</label>
             </div>
 
             <div class="auth-actions">
-                <a href="{% url 'login' %}" class="btn-link">Đăng nhập thay thế</a>
-                <button type="submit" class="btn btn-primary">Đăng ký</button>
+                <a href="{% url 'login' %}" class="btn-link" data-i18n="auth.sign_in_instead">Sign in instead</a>
+                <button type="submit" class="btn btn-primary" data-i18n="auth.signup_btn">Sign up</button>
             </div>
         </form>
     </div>
+    <button type="button" class="lang-switch-chip" data-lang-toggle="true">EN / VI</button>
 </div>
 {% endblock %}

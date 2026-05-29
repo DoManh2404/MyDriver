@@ -1,6 +1,6 @@
 {% extends 'drive/base.html' %}
 
-{% block title %}Đăng nhập - Google Drive Clone{% endblock %}
+{% block title %}Sign in - Google Drive Clone{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
@@ -12,8 +12,8 @@
                 <path d="m20.5 50.2-20.5-35.4 13.9-24.2 34.3 59.6z" fill="#00a85d"/>
                 <path d="m60.1 50.2-13.8-24.1 20.6-35.5 20.4 35.4z" fill="#ffbc00"/>
             </svg>
-            <h2>Google Drive</h2>
-            <p>Đăng nhập để tiếp tục đến Drive của bạn</p>
+            <h2 data-i18n="auth.drive_title">Google Drive</h2>
+            <p data-i18n="auth.login_subtitle">Sign in to continue to Drive</p>
         </div>
 
         {% if error %}
@@ -28,19 +28,20 @@
             
             <div class="form-group">
                 <input type="text" id="username" name="username" placeholder=" " required autocomplete="username">
-                <label for="username">Tên đăng nhập</label>
+                <label for="username" data-i18n="auth.username">Username</label>
             </div>
 
             <div class="form-group">
                 <input type="password" id="password" name="password" placeholder=" " required autocomplete="current-password">
-                <label for="password">Mật khẩu</label>
+                <label for="password" data-i18n="auth.password">Password</label>
             </div>
 
             <div class="auth-actions">
-                <a href="{% url 'signup' %}" class="btn-link">Tạo tài khoản</a>
-                <button type="submit" class="btn btn-primary">Tiếp theo</button>
+                <a href="{% url 'signup' %}" class="btn-link" data-i18n="auth.create_account">Create account</a>
+                <button type="submit" class="btn btn-primary" data-i18n="auth.login_btn">Next</button>
             </div>
         </form>
     </div>
+    <button type="button" class="lang-switch-chip" data-lang-toggle="true">EN / VI</button>
 </div>
 {% endblock %}
